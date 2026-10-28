@@ -1,5 +1,3 @@
 #include "shell.h"
 
-int main() {
-    shell_func();
-}
+int main() { shell_func(); }

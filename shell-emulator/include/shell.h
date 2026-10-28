@@ -6,10 +6,10 @@
 
 typedef struct arg {
     size_t amount;
-    char* argv[ARGS_AM];
+    char *argv[ARGS_AM];
 } arg;
 
 void see_status(int status);
 void shell_func();
-size_t arr_of_ptr(char* buffer ,arg* commands);
-void arr_dump(size_t comm_count ,arg* args_arr);
+size_t arr_of_ptr(char *buffer, arg *commands);
+void arr_dump(size_t comm_count, arg *args_arr);
