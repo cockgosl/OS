@@ -18,7 +18,10 @@ target_link_libraries(monte_carlo_common PUBLIC Threads::Threads)
 add_executable(monte_carlo_a src/monte_carlo_a.c)
 target_link_libraries(monte_carlo_a PRIVATE monte_carlo_common)
 
-foreach(target IN ITEMS monte_carlo_common monte_carlo_a)
+add_executable(monte_carlo_b src/monte_carlo_b.c)
+target_link_libraries(monte_carlo_b PRIVATE monte_carlo_common)
+
+foreach(target IN ITEMS monte_carlo_common monte_carlo_a monte_carlo_b)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
     endif()
