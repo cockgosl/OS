@@ -5,14 +5,6 @@ System V shared memory, or a System V message queue.
 
 ## Build
 
-Requirements: Linux with glibc, a C11 compiler, CMake 3.16 or later, and Make or
-another CMake-supported build tool. From the root of the OS repository:
-
-```bash
-cmake -S memory -B memory/build -DCMAKE_BUILD_TYPE=Release
-cmake --build memory/build --parallel
-```
-
 ## Manual execution
 
 Run each sender and receiver from the same working directory. Use different paths
