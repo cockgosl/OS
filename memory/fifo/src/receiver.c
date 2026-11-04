@@ -1,6 +1,5 @@
 #include "fifo.h"
 
-#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,27 +15,30 @@ static int receiveFile(int fifo_fd, FILE *output, size_t buffer_size) {
     int result = 0;
 
     while (true) {
-        ssize_t bytes_read;
-
-        do {
-            bytes_read = read(fifo_fd, buffer, buffer_size);
-        } while (bytes_read == -1 && errno == EINTR);
-
-        if (bytes_read == -1) {
-            perror("read FIFO");
+        uint64_t remaining;
+        if (readBlockSize(fifo_fd, &remaining) == -1) {
             result = -1;
             break;
         }
-
-        if (bytes_read == 0) {
+        if (remaining == 0) {
             break;
         }
 
-        size_t bytes_to_write = (size_t)bytes_read;
-
-        if (fwrite(buffer, 1, bytes_to_write, output) != bytes_to_write) {
-            perror("fwrite output");
-            result = -1;
+        while (remaining > 0) {
+            size_t chunk_size =
+                remaining < buffer_size ? (size_t)remaining : buffer_size;
+            if (readAll(fifo_fd, buffer, chunk_size) == -1) {
+                result = -1;
+                break;
+            }
+            if (fwrite(buffer, 1, chunk_size, output) != chunk_size) {
+                perror("fwrite output");
+                result = -1;
+                break;
+            }
+            remaining -= chunk_size;
+        }
+        if (result == -1) {
             break;
         }
     }

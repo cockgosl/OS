@@ -24,7 +24,9 @@ static int sendFile(int fifo_fd, FILE *input, size_t buffer_size) {
             break;
         }
 
-        if (bytes_read > 0 && writeAll(fifo_fd, buffer, bytes_read) == -1) {
+        if (bytes_read > 0 &&
+            (writeBlockSize(fifo_fd, (uint64_t)bytes_read) == -1 ||
+             writeAll(fifo_fd, buffer, bytes_read) == -1)) {
             result = -1;
             break;
         }
@@ -94,6 +96,11 @@ int main(int argc, char *argv[]) {
 cleanup:
     if (fclose(input) == EOF) {
         perror("fclose input");
+        result = -1;
+    }
+
+    /* Publish completion only after reading and closing the input succeed. */
+    if (result == 0 && writeBlockSize(fifo_fd, 0) == -1) {
         result = -1;
     }
 

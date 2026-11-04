@@ -77,6 +77,51 @@ int openFifoForReading(const char *path) { return openFifo(path, O_RDONLY); }
 
 int openFifoForWriting(const char *path) { return openFifo(path, O_WRONLY); }
 
+int readAll(int fd, void *buffer, size_t size) {
+    char *data = buffer;
+    size_t total_read = 0;
+
+    while (total_read < size) {
+        ssize_t bytes_read = read(fd, data + total_read, size - total_read);
+        if (bytes_read == -1 && errno == EINTR) {
+            continue;
+        }
+        if (bytes_read == -1) {
+            perror("read FIFO");
+            return -1;
+        }
+        if (bytes_read == 0) {
+            fprintf(stderr, "Unexpected EOF in FIFO transfer\n");
+            return -1;
+        }
+        total_read += (size_t)bytes_read;
+    }
+    return 0;
+}
+
+int readBlockSize(int fd, uint64_t *size) {
+    unsigned char header[8];
+    if (readAll(fd, header, sizeof(header)) == -1) {
+        return -1;
+    }
+
+    uint64_t value = 0;
+    for (size_t i = 0; i < sizeof(header); ++i) {
+        value = (value << 8) | header[i];
+    }
+    *size = value;
+    return 0;
+}
+
+int writeBlockSize(int fd, uint64_t size) {
+    unsigned char header[8];
+    for (size_t i = sizeof(header); i > 0; --i) {
+        header[i - 1] = (unsigned char)(size & UINT64_C(0xff));
+        size >>= 8;
+    }
+    return writeAll(fd, header, sizeof(header));
+}
+
 int writeAll(int fd, const void *buffer, size_t size) {
     const char *data = buffer;
     size_t total_written = 0;
