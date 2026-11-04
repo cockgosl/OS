@@ -11,5 +11,6 @@ int postSemaphore(int semid, unsigned short sem_num);
 int detachSharedMemory(void *data);
 int removeSharedMemory(int shmid);
 int removeSemaphoreSet(int semid);
+int removeMessageQueue(int msqid);
 
 #endif

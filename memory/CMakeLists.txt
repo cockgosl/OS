@@ -15,3 +15,4 @@ endif()
 
 add_subdirectory(fifo)
 add_subdirectory(sysv_shm)
+add_subdirectory(sysv_queue)

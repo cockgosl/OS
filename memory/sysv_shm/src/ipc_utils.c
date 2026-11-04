@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/msg.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <unistd.h>
@@ -97,5 +98,20 @@ int removeSemaphoreSet(int semid) {
         return -1;
     }
 
+    return 0;
+}
+
+int removeMessageQueue(int msqid) {
+    if (msqid < 0) {
+        return 0;
+    }
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+        /* Either peer may remove the queue after a transfer error. */
+        if (errno == EIDRM || errno == EINVAL) {
+            return 0;
+        }
+        perror("msgctl IPC_RMID");
+        return -1;
+    }
     return 0;
 }
