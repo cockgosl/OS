@@ -14,3 +14,4 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 add_subdirectory(fifo)
+add_subdirectory(sysv_shm)
