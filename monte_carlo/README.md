@@ -97,3 +97,52 @@ run the following command from the original working directory, after A has stopp
 
 Cleanup succeeds even when no segment exists. It discards any pending result for
 that key. The key file itself is retained for subsequent runs.
+
+
+## Experiments
+
+`benchmarks/experiments.py` collects measurements and plots saved results. Running
+experiments requires Python 3.8 or later. Plotting additionally requires
+`matplotlib` 3.5 or later.
+
+From the root of the OS repository, build with optimizations enabled and run:
+
+```bash
+cmake -S monte_carlo -B monte_carlo/build -DCMAKE_BUILD_TYPE=Release
+cmake --build monte_carlo/build --parallel
+python3 monte_carlo/benchmarks/experiments.py run \
+    --build-dir monte_carlo/build \
+    --points 2000000 \
+    --threads 1 2 4 8 16 \
+    --repeats 5 \
+    --output monte_carlo/results/scaling.csv
+```
+
+Each round runs both modes for every requested thread count, in shuffled order.
+Measurements run sequentially. A and B use a temporary working directory, with IPC
+cleanup attempted before the directory is removed, including on errors and Ctrl+C.
+A forced termination of the runner can prevent cleanup.
+
+`--timeout` limits each program invocation to 60 seconds by default. `--seed`
+controls the scenario order and defaults to `0`; it does not control random point
+generation in A. The script stops on a failed measurement and retains completed
+CSV rows. Existing CSV files are not overwritten; choose a new output path for
+each experiment. Paths are interpreted relative to the directory where the script
+is invoked.
+
+The CSV columns are:
+
+```text
+mode,threads,points,run,elapsed_seconds,hits,estimate,absolute_error
+```
+
+Generate a figure from the saved CSV:
+
+```bash
+python3 monte_carlo/benchmarks/experiments.py plot monte_carlo/results/scaling.csv
+```
+
+The figure is saved as `monte_carlo/results/scaling.png`. It contains median elapsed
+times and speedup, normalized to each mode's own one-thread median. All rows must
+use the same point count, and each plotted mode must include a one-thread
+measurement. Regenerating the plot replaces the PNG without rerunning experiments.
